@@ -19,11 +19,22 @@
 #define button_B 6
 #define button_Joy 22
 
+//Variáveis Globais para permitir a função de saída da matriz de LEDs
+PIO pio;
+uint sm;
+
 //Rotina para interrupção
-static void gpio_irq_handler(uint gpio, uint32_t events) {
-    printf("Interrupção ocorreu no pino %d, no evento %d\n", gpio, events);
-    printf("HABILITANDO O MODO GRAVAÇÃO");
-	reset_usb_boot(0,0); //Habilita o modo de gravação do microcontrolador
+void gpio_irq_handler(uint gpio, uint32_t events) {
+    if (gpio == button_A) {
+        /* code */
+    } else if (gpio == button_B) {
+        /* code */
+    } else if (gpio == button_Joy) {
+        reset_usb_boot(0,0); //Habilita o modo de gravação do microcontrolador
+    } else {
+        // Não faz nada
+    }
+    
 }
 
 void inicializa() {
@@ -75,11 +86,51 @@ uint32_t matrix_rgb(double b, double r, double g) {
   return (G << 24) | (R << 16) | (B << 8);
 }
 
+void desenho (double *desenho, int cor) {
+    uint32_t valor_led;
+    if (cor == 1) { //liga todos os LEDs na cor vermelha
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+        uint32_t valor_led = matrix_rgb(desenho[24-i], 0.0, 0.0);
+        pio_sm_put_blocking(pio, sm, valor_led);
+        }
+    } else if (cor==2) { //liga todos os LEDs na cor amarela
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+        valor_led = matrix_rgb(desenho[24-i], desenho[24-i], 0.0);
+        pio_sm_put_blocking(pio, sm, valor_led);
+        } 
+    } else if (cor==3) { //liga todos os LEDs na cor verde
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+            valor_led = matrix_rgb(0.0, desenho[24-i], 0.0);
+            pio_sm_put_blocking(pio, sm, valor_led);
+        }
+    } else if (cor==4) { //liga todos os LEDs na cor ciano
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+            valor_led = matrix_rgb(0.0, desenho[24-i], desenho[24-i]);
+            pio_sm_put_blocking(pio, sm, valor_led);
+        }
+    } else if (cor==5) { //liga todos os LEDs na cor azul
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+            valor_led = matrix_rgb(0.0, 0.0, desenho[24-i]);
+            pio_sm_put_blocking(pio, sm, valor_led);
+        }
+    } else if (cor==6) { //liga todos os LEDs na cor magenta
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+            valor_led = matrix_rgb(desenho[24-i], 0.0, desenho[24-i]);
+            pio_sm_put_blocking(pio, sm, valor_led);
+        }
+    } else { //liga todos os LEDs na cor branca
+        for (int16_t i = 0; i < NUM_PIXELS; i++) {
+            valor_led = matrix_rgb(desenho[24-i], desenho[24-i], desenho[24-i]);
+            pio_sm_put_blocking(pio, sm, valor_led);
+        }
+    }
+}
+
 int main() {
     
-    inicializa(); //
+    inicializa(); //Inicializa variáveis, pio, botões, saídas e interrupções
 
-    while (true) {
+    while (true) { //Rotina que faz com que o LED pisque 5 vezes por segundo
         gpio_put(pisca_led, true);
         sleep_ms(100);
         gpio_put(pisca_led, false);

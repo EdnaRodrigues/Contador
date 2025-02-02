@@ -22,7 +22,7 @@
 //Variáveis Globais para permitir a função de saída da matriz de LEDs
 PIO pio;
 uint sm;
-double r = 0.5, b = 0.5, g = 0;
+double r = 0.2, b = 0, g = 0;
 int i;
 static volatile uint32_t last_time = 0; // Armazena o tempo do último evento (em microssegundos)
 
@@ -51,7 +51,7 @@ double numeros[10][25] = {
     { // Número 3
         1, 1, 1, 1, 1,
         1, 0, 0, 0, 0,
-        1, 1, 1, 1, 0,
+        1, 1, 1, 1, 1,
         1, 0, 0, 0, 0,
         1, 1, 1, 1, 1
     },

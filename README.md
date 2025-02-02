@@ -1,4 +1,4 @@
-l﻿# Matriz 5x5 de LEDs WS2812 com Controle de Números e Interrupções
+﻿# Matriz 5x5 de LEDs WS2812 com Controle de Números e Interrupções
 
 ## 📌 Descrição do Projeto
 Este projeto implementa uma matriz 5x5 de LEDs WS2812 controlada por um microcontrolador. A matriz exibe os números de **0 a 9**, que podem ser alterados utilizando botões físicos. Além disso, um LED vermelho extra pisca continuamente **5 vezes por segundo**. O projeto também conta com um **modo de gravação** ativado por um botão do joystick.
@@ -40,7 +40,7 @@ O código principal:
 1. **Compile e grave o código na placa BitDogLab**.
 2. **Observe o acionamento dos LEDs** e observe a matriz exibindo os números.
 4. **Pressione os botões** para alterar o número exibido.
-5. **Pressione o botão do joystick** para ativar o modo de gravação caso queira modificar o arquivo '.uf2' na placa de desenvolvimento.
+5. **Pressione o botão do joystick** para ativar o modo de gravação caso queira modificar o arquivo `.uf2` na placa de desenvolvimento.
 
 ---
 

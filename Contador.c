@@ -22,7 +22,7 @@
 //Variáveis Globais para permitir a função de saída da matriz de LEDs
 PIO pio;
 uint sm;
-double r = 1, b = 1, g = 1;
+double r = 0.5, b = 0.5, g = 0;
 int i;
 static volatile uint32_t last_time = 0; // Armazena o tempo do último evento (em microssegundos)
 
@@ -36,49 +36,49 @@ double numeros[10][25] = {
     },
     { // Número 1
         0, 0, 1, 0, 0,
-        0, 1, 1, 0, 0,
+        0, 0, 1, 1, 0,
         0, 0, 1, 0, 0,
         0, 0, 1, 0, 0,
         0, 1, 1, 1, 0
     },
     { // Número 2
         1, 1, 1, 1, 1,
-        0, 0, 0, 0, 1,
-        1, 1, 1, 1, 1,
         1, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
         1, 1, 1, 1, 1
     },
     { // Número 3
         1, 1, 1, 1, 1,
-        0, 0, 0, 0, 1,
-        0, 1, 1, 1, 1,
-        0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0,
+        1, 1, 1, 1, 0,
+        1, 0, 0, 0, 0,
         1, 1, 1, 1, 1
     },
     { // Número 4
         1, 0, 0, 1, 0,
-        1, 0, 0, 1, 0,
+        0, 1, 0, 0, 1,
         1, 1, 1, 1, 1,
-        0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0,
         0, 0, 0, 1, 0
     },
     { // Número 5
         1, 1, 1, 1, 1,
-        1, 0, 0, 0, 0,
-        1, 1, 1, 1, 1,
         0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0,
         1, 1, 1, 1, 1
     },
     { // Número 6
         1, 1, 1, 1, 1,
-        1, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
         1, 1, 1, 1, 1,
         1, 0, 0, 0, 1,
         1, 1, 1, 1, 1
     },
     { // Número 7
         1, 1, 1, 1, 1,
-        0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0,
         0, 0, 0, 1, 0,
         0, 0, 1, 0, 0,
         0, 1, 0, 0, 0
@@ -94,15 +94,33 @@ double numeros[10][25] = {
         1, 1, 1, 1, 1,
         1, 0, 0, 0, 1,
         1, 1, 1, 1, 1,
-        0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0,
         1, 1, 1, 1, 1
     }
 };
+ 
+uint32_t matrix_rgb (double r, double g, double b) {
+  unsigned char R, G, B;
+  R = r * 255;
+  G = g * 255;
+  B = b * 255;
+  return (G << 24) | (R << 16) | (B << 8);
+}
+
+void desenho (int n) {
+    uint32_t valor_led;
+    double *desenho = numeros[n];// Obtém o vetor de 25 elementos do número desejado
+
+    for (int16_t i = 0; i < NUM_PIXELS; i++) {
+        valor_led = matrix_rgb(r*desenho[24-i], g*desenho[24-i], b*desenho[24-i]); // LED apagado para os espaços vazios
+        pio_sm_put_blocking(pio, sm, valor_led);
+    }
+}
 
 //Rotina para interrupção
 void gpio_irq_handler(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
-    if (current_time - last_time > 150000) { //Apenas ativa as funções quando o intervalo entre acionamentos é superior a 0.15 segundos
+    if (current_time - last_time > 250000) { //Apenas ativa as funções quando o intervalo entre acionamentos é superior a 0.25 segundos
         last_time = current_time; //Atualiza o tempo do último evento
 
         if (gpio == button_A) {
@@ -121,24 +139,6 @@ void gpio_irq_handler(uint gpio, uint32_t events) {
         } else {
             // Não faz nada
         }   
-    }
-}
-
-uint32_t matrix_rgb (double r, double g, double b) {
-  unsigned char R, G, B;
-  R = r * 255;
-  G = g * 255;
-  B = b * 255;
-  return (G << 24) | (R << 16) | (B << 8);
-}
-
-void desenho (int n) {
-    uint32_t valor_led;
-    double *desenho = numeros[n];// Obtém o vetor de 25 elementos do número desejado
-
-    for (int16_t i = 0; i < NUM_PIXELS; i++) {
-        valor_led = matrix_rgb(r*desenho[24-i], g*desenho[24-i], b*desenho[24-i]); // LED apagado para os espaços vazios
-        pio_sm_put_blocking(pio, sm, valor_led);
     }
 }
 

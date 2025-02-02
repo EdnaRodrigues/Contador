@@ -22,25 +22,130 @@
 //Variáveis Globais para permitir a função de saída da matriz de LEDs
 PIO pio;
 uint sm;
+double r = 1, b = 1, g = 1;
+int i;
+static volatile uint32_t last_time = 0; // Armazena o tempo do último evento (em microssegundos)
+
+double numeros[10][25] = {
+    { // Número 0
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 1, 1, 1, 1
+    },
+    { // Número 1
+        0, 0, 1, 0, 0,
+        0, 1, 1, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 1, 1, 1, 0
+    },
+    { // Número 2
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0,
+        1, 1, 1, 1, 1
+    },
+    { // Número 3
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
+        0, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1
+    },
+    { // Número 4
+        1, 0, 0, 1, 0,
+        1, 0, 0, 1, 0,
+        1, 1, 1, 1, 1,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 1, 0
+    },
+    { // Número 5
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1
+    },
+    { // Número 6
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 1,
+        1, 1, 1, 1, 1
+    },
+    { // Número 7
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
+        0, 0, 0, 1, 0,
+        0, 0, 1, 0, 0,
+        0, 1, 0, 0, 0
+    },
+    { // Número 8
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 1,
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 1,
+        1, 1, 1, 1, 1
+    },
+    { // Número 9
+        1, 1, 1, 1, 1,
+        1, 0, 0, 0, 1,
+        1, 1, 1, 1, 1,
+        0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1
+    }
+};
 
 //Rotina para interrupção
 void gpio_irq_handler(uint gpio, uint32_t events) {
-    if (gpio == button_A) {
-        /* code */
-    } else if (gpio == button_B) {
-        /* code */
-    } else if (gpio == button_Joy) {
-        reset_usb_boot(0,0); //Habilita o modo de gravação do microcontrolador
-    } else {
-        // Não faz nada
+    uint32_t current_time = to_us_since_boot(get_absolute_time());
+    if (current_time - last_time > 150000) { //Apenas ativa as funções quando o intervalo entre acionamentos é superior a 0.15 segundos
+        last_time = current_time; //Atualiza o tempo do último evento
+
+        if (gpio == button_A) {
+            if (i < 9 && i >= 0) {
+                i++;
+                desenho (i);
+            }
+        } else if (gpio == button_B) {
+            if (i <= 9 && i > 0) {
+                i--;
+                desenho (i);
+            }
+            
+        } else if (gpio == button_Joy) {
+            reset_usb_boot(0,0); //Habilita o modo de gravação do microcontrolador
+        } else {
+            // Não faz nada
+        }   
     }
-    
+}
+
+uint32_t matrix_rgb (double r, double g, double b) {
+  unsigned char R, G, B;
+  R = r * 255;
+  G = g * 255;
+  B = b * 255;
+  return (G << 24) | (R << 16) | (B << 8);
+}
+
+void desenho (int n) {
+    uint32_t valor_led;
+    double *desenho = numeros[n];// Obtém o vetor de 25 elementos do número desejado
+
+    for (int16_t i = 0; i < NUM_PIXELS; i++) {
+        valor_led = matrix_rgb(r*desenho[24-i], g*desenho[24-i], b*desenho[24-i]); // LED apagado para os espaços vazios
+        pio_sm_put_blocking(pio, sm, valor_led);
+    }
 }
 
 void inicializa() {
-    PIO pio = pio0; 
+    pio = pio0; 
     bool ok;
-    double r = 0.0, b = 0.0 , g = 0.0;
+    i = 0;
 
     //Coloca a frequência de clock para 128 MHz, facilitando a divisão pelo clock
     ok = set_sys_clock_khz(128000, false);
@@ -50,7 +155,7 @@ void inicializa() {
 
     //Configurações da PIO
     uint offset = pio_add_program(pio, &Contador_program);
-    uint sm = pio_claim_unused_sm(pio, true);
+    sm = pio_claim_unused_sm(pio, true);
     Contador_program_init(pio, sm, offset, OUT_PIN);
 
     //Inicializar o LED que irá piscar continuamente
@@ -76,54 +181,8 @@ void inicializa() {
     gpio_set_irq_enabled_with_callback(button_A, GPIO_IRQ_EDGE_FALL, true, & gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(button_B, GPIO_IRQ_EDGE_FALL, true, & gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(button_Joy, GPIO_IRQ_EDGE_FALL, true, & gpio_irq_handler);
-}
 
-uint32_t matrix_rgb(double b, double r, double g) {
-  unsigned char R, G, B;
-  R = r * 255;
-  G = g * 255;
-  B = b * 255;
-  return (G << 24) | (R << 16) | (B << 8);
-}
-
-void desenho (double *desenho, int cor) {
-    uint32_t valor_led;
-    if (cor == 1) { //liga todos os LEDs na cor vermelha
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-        uint32_t valor_led = matrix_rgb(desenho[24-i], 0.0, 0.0);
-        pio_sm_put_blocking(pio, sm, valor_led);
-        }
-    } else if (cor==2) { //liga todos os LEDs na cor amarela
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-        valor_led = matrix_rgb(desenho[24-i], desenho[24-i], 0.0);
-        pio_sm_put_blocking(pio, sm, valor_led);
-        } 
-    } else if (cor==3) { //liga todos os LEDs na cor verde
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-            valor_led = matrix_rgb(0.0, desenho[24-i], 0.0);
-            pio_sm_put_blocking(pio, sm, valor_led);
-        }
-    } else if (cor==4) { //liga todos os LEDs na cor ciano
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-            valor_led = matrix_rgb(0.0, desenho[24-i], desenho[24-i]);
-            pio_sm_put_blocking(pio, sm, valor_led);
-        }
-    } else if (cor==5) { //liga todos os LEDs na cor azul
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-            valor_led = matrix_rgb(0.0, 0.0, desenho[24-i]);
-            pio_sm_put_blocking(pio, sm, valor_led);
-        }
-    } else if (cor==6) { //liga todos os LEDs na cor magenta
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-            valor_led = matrix_rgb(desenho[24-i], 0.0, desenho[24-i]);
-            pio_sm_put_blocking(pio, sm, valor_led);
-        }
-    } else { //liga todos os LEDs na cor branca
-        for (int16_t i = 0; i < NUM_PIXELS; i++) {
-            valor_led = matrix_rgb(desenho[24-i], desenho[24-i], desenho[24-i]);
-            pio_sm_put_blocking(pio, sm, valor_led);
-        }
-    }
+    desenho(0);
 }
 
 int main() {

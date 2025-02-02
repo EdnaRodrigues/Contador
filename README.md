@@ -44,7 +44,7 @@ O código principal:
 
 ---
 
-## Vídeo de Demonstração
+## 📽️ Vídeo de Demonstração
 
 [Assista ao vídeo explicativo aqui!](https://youtu.be/gILFplkfyM4?si=wrwLuL3aTqvUpNtY)
 

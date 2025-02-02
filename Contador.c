@@ -132,8 +132,7 @@ void gpio_irq_handler(uint gpio, uint32_t events) {
             if (i <= 9 && i > 0) {
                 i--;
                 desenho (i);
-            }
-            
+            }  
         } else if (gpio == button_Joy) {
             reset_usb_boot(0,0); //Habilita o modo de gravação do microcontrolador
         } else {

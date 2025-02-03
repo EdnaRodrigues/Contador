@@ -17,7 +17,7 @@ cont:
 #include "hardware/clocks.h"
 
 static inline void Contador_program_init(PIO pio, uint sm, uint offset, uint pin) {
-    pio_sm_config c = pio_matrix_program_get_default_config(offset);
+    pio_sm_config c = Contador_program_get_default_config(offset);
 
     // Atrela o pio aos pinos GPIO
     pio_gpio_init(pio, pin);

@@ -37,8 +37,10 @@ O código principal:
 ---
 
 ## 📌 Como Rodar o Projeto
-1. **Compile e grave o código na placa BitDogLab**.
-2. **Observe o acionamento dos LEDs** e observe a matriz exibindo os números.
+1. **Faça git clone** deste repositório no Visual Studio Code.
+2. **Importe a pasta como projeto Raspberry Pi Pico**.
+2. **Compile e grave o código na placa BitDogLab**.
+3. **Observe o acionamento dos LEDs** e observe a matriz exibindo os números.
 4. **Pressione os botões** para alterar o número exibido.
 5. **Pressione o botão do joystick** para ativar o modo de gravação caso queira modificar o arquivo `.uf2` na placa de desenvolvimento.
 
